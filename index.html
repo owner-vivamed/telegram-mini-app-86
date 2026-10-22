@@ -1,209 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Premium Mini App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Shaxsiy Messenger</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="config.js"></script>
     <style>
         :root {
-            --bg-color: #0f0f1a;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --text-color: #ffffff;
-            --accent-color: #6c5ce7;
-            --secondary-color: #a29bfe;
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --bg: var(--tg-theme-bg-color, #0f0f1a);
+            --bg2: var(--tg-theme-secondary-bg-color, #181828);
+            --text: var(--tg-theme-text-color, #ffffff);
+            --hint: var(--tg-theme-hint-color, #8e8ea8);
+            --accent: var(--tg-theme-button-color, #6c5ce7);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+            --bubble-in: var(--bg2);
+            --line: rgba(128, 128, 150, .18);
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            background: radial-gradient(circle at top left, #2d3436, #000000);
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* Ambient Background Blotches */
-        .ambient-light {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
-            top: -50px;
-            left: -50px;
-            z-index: 0;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .ambient-light-2 {
-            position: absolute;
-            width: 250px;
-            height: 250px;
-            background: radial-gradient(circle, rgba(0, 206, 201, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
-            bottom: -50px;
-            right: -50px;
-            z-index: 0;
-            animation: float 8s ease-in-out infinite reverse;
-        }
-
-        @keyframes float {
-            0% {
-                transform: translate(0, 0);
-            }
-
-            50% {
-                transform: translate(20px, 20px);
-            }
-
-            100% {
-                transform: translate(0, 0);
-            }
-        }
-
-        .container {
-            position: relative;
-            width: 90%;
-            max-width: 400px;
-            padding: 40px 30px;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
-            border: 1px solid var(--glass-border);
-            text-align: center;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            z-index: 1;
-            animation: popup 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes popup {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.5);
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #fff, #a29bfe);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        p {
-            font-size: 16px;
-            color: #b2bec3;
-            line-height: 1.5;
-            margin-bottom: 30px;
-        }
-
-        .main-btn {
-            background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
-            position: relative;
+        html, body {
+            margin: 0; height: 100%;
+            background: var(--bg); color: var(--text);
+            font: 16px/1.4 -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             overflow: hidden;
         }
 
-        .main-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
+        #app { position: relative; height: 100%; max-width: 720px; margin: 0 auto; overflow: hidden; }
 
-        .main-btn:hover::before {
-            left: 100%;
+        .view {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            background: var(--bg); transition: transform .25s ease;
+            padding-bottom: env(safe-area-inset-bottom);
         }
+        #chat { transform: translateX(100%); }
+        #app.in-chat #chat { transform: none; }
+        #app.in-chat #list { transform: translateX(-25%); }
 
-        .main-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.6);
+        header {
+            display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+            border-bottom: 1px solid var(--line); min-height: 56px;
         }
-
-        .main-btn:active {
-            transform: translateY(1px);
+        header h1 { font-size: 19px; margin: 0; flex: 1; }
+        .sub { font-size: 12px; color: var(--hint); }
+        .iconbtn {
+            background: none; border: 0; color: var(--text); font-size: 22px; width: 38px; height: 38px;
+            border-radius: 50%; cursor: pointer;
         }
+        .iconbtn:active { background: var(--line); }
 
-        footer {
-            margin-top: 20px;
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.3);
+        .avatar {
+            flex: none; width: 46px; height: 46px; border-radius: 50%; color: #fff; font-weight: 600;
+            display: flex; align-items: center; justify-content: center; background-size: cover;
+            background-position: center; user-select: none;
+        }
+        .avatar.sm { width: 38px; height: 38px; font-size: 14px; }
+
+        #search { padding: 8px 14px; border-bottom: 1px solid var(--line); }
+        input[type=text], textarea {
+            width: 100%; border: 0; outline: 0; background: var(--bg2); color: var(--text);
+            border-radius: 12px; padding: 11px 14px; font: inherit;
+        }
+        ::placeholder { color: var(--hint); }
+
+        #convs, #msgs { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .row { display: flex; gap: 12px; padding: 10px 14px; cursor: pointer; align-items: center; }
+        .row:active { background: var(--line); }
+        .row .mid { flex: 1; min-width: 0; }
+        .row .top { display: flex; justify-content: space-between; gap: 8px; }
+        .row .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row .time { font-size: 12px; color: var(--hint); flex: none; }
+        .row .last { color: var(--hint); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+        .row .bot { display: flex; gap: 8px; align-items: center; }
+        .badge {
+            flex: none; background: var(--accent); color: var(--accent-text); border-radius: 999px;
+            min-width: 20px; height: 20px; padding: 0 6px; font-size: 12px; line-height: 20px; text-align: center;
+        }
+        .empty { color: var(--hint); text-align: center; padding: 48px 24px; }
+
+        #msgs { padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+        .day { align-self: center; font-size: 12px; color: var(--hint); background: var(--bg2); padding: 3px 10px; border-radius: 999px; margin: 8px 0; }
+        .msg {
+            max-width: 80%; padding: 7px 11px 5px; border-radius: 16px; word-wrap: break-word; white-space: pre-wrap;
+            background: var(--bubble-in); align-self: flex-start; border-bottom-left-radius: 5px;
+        }
+        .msg.me { align-self: flex-end; background: var(--accent); color: var(--accent-text); border-bottom-left-radius: 16px; border-bottom-right-radius: 5px; }
+        .msg .meta { display: block; text-align: right; font-size: 11px; opacity: .65; margin-top: 1px; }
+        .msg.pending { opacity: .6; }
+
+        #composer { display: flex; gap: 8px; align-items: flex-end; padding: 8px 10px; border-top: 1px solid var(--line); }
+        #composer textarea { resize: none; max-height: 120px; border-radius: 20px; }
+        #send {
+            flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
+            background: var(--accent); color: var(--accent-text); font-size: 19px;
+        }
+        #send:disabled { opacity: .4; }
+
+        #banner { display: none; background: #b8860b; color: #fff; font-size: 12px; text-align: center; padding: 5px 10px; }
+        #toast {
+            position: fixed; left: 50%; bottom: 80px; transform: translateX(-50%); background: #000c; color: #fff;
+            padding: 9px 16px; border-radius: 999px; font-size: 14px; display: none; z-index: 10;
         }
     </style>
 </head>
 
 <body>
+    <div id="app">
+        <section class="view" id="list">
+            <header>
+                <h1>Xabarlar</h1>
+                <span class="sub" id="me-label"></span>
+            </header>
+            <div id="banner"></div>
+            <div id="search"><input type="text" id="q" placeholder="Qidirish: @username yoki ID" autocomplete="off"></div>
+            <div id="convs"></div>
+        </section>
 
-    <div class="ambient-light"></div>
-    <div class="ambient-light-2"></div>
-
-    <div class="container">
-        <div class="logo">🚀</div>
-        <h1>Xush Kelibsiz!</h1>
-        <p>Sizning yangi Premium darajadagi Telegram Mini App interfeysingiz tayyor.</p>
-        <button class="main-btn" onclick="showPopup()">Boshlash</button>
-
-        <footer>v1.0 • Antigravity tomonidan yaratildi</footer>
+        <section class="view" id="chat">
+            <header>
+                <button class="iconbtn" id="back" aria-label="Orqaga">‹</button>
+                <div class="avatar sm" id="peer-avatar"></div>
+                <div style="flex:1;min-width:0">
+                    <h1 id="peer-name" style="font-size:17px"></h1>
+                    <div class="sub" id="peer-sub"></div>
+                </div>
+            </header>
+            <div id="msgs"></div>
+            <form id="composer">
+                <textarea id="input" rows="1" placeholder="Xabar yozing…" maxlength="4000"></textarea>
+                <button id="send" type="submit" aria-label="Yuborish" disabled>➤</button>
+            </form>
+        </section>
     </div>
+    <div id="toast"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Ilovani to'liq ekran qilish
+    'use strict';
+    const tg = window.Telegram?.WebApp;
+    const CFG = window.MESSENGER_CONFIG || {};
+    tg?.ready(); tg?.expand();
 
-        // Mavzuga moslashish (Theme Params)
-        if (tg.themeParams.bg_color) {
-            document.documentElement.style.setProperty('--bg-color', tg.themeParams.bg_color);
-            document.documentElement.style.setProperty('--card-bg', tg.themeParams.secondary_bg_color || 'rgba(255, 255, 255, 0.05)');
-            document.documentElement.style.setProperty('--text-color', tg.themeParams.text_color);
+    // ---------- yordamchilar ----------
+    const $ = (id) => document.getElementById(id);
+    const fullName = (u) => [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || String(u.id);
+    const hue = (id) => (Math.abs(Number(id)) * 47) % 360;
+    const fmtTime = (ts) => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const sameDay = (a, b) => new Date(a).toDateString() === new Date(b).toDateString();
+    function fmtDay(ts) {
+        const d = new Date(ts), t = new Date();
+        if (sameDay(d, t)) return 'Bugun';
+        if (sameDay(d, new Date(t - 864e5))) return 'Kecha';
+        return d.toLocaleDateString([], { day: 'numeric', month: 'long' });
+    }
+    function fmtShort(ts) {
+        return sameDay(ts, Date.now()) ? fmtTime(ts) : new Date(ts).toLocaleDateString([], { day: '2-digit', month: '2-digit' });
+    }
+    function toast(text) {
+        const t = $('toast'); t.textContent = text; t.style.display = 'block';
+        clearTimeout(toast.t); toast.t = setTimeout(() => (t.style.display = 'none'), 2500);
+    }
+    function avatarEl(el, u) {
+        el.textContent = ''; el.style.backgroundImage = '';
+        if (u.photo_url) el.style.backgroundImage = `url("${encodeURI(u.photo_url)}")`;
+        else {
+            el.style.background = `hsl(${hue(u.id)} 55% 48%)`;
+            el.textContent = fullName(u).slice(0, 1).toUpperCase();
         }
+    }
+    const buzz = (kind) => tg?.HapticFeedback?.impactOccurred?.(kind || 'light');
 
-        function showPopup() {
-            tg.showPopup({
-                title: 'Zo\'r natija!',
-                message: 'Ushbu tugma Telegram WebApp interfeysi orqali ishlamoqda.',
-                buttons: [{ type: 'ok', text: 'Tushunarli' }]
-            });
+    // ---------- backend: lokal demo ----------
+    // Bir brauzerdagi bir nechta tab o'rtasida ishlaydi. Ikkinchi foydalanuvchi: ?as=Ali
+    function LocalBackend() {
+        const BOT = { id: 1, first_name: 'Vivi', last_name: 'Bot', username: 'vivi_bot' };
+        const ls = {
+            get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+            set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+        };
+        const ch = 'BroadcastChannel' in window ? new BroadcastChannel('tm-demo') : null;
+        let me, listener = () => {};
+        const users = () => ls.get('tm_users', { 1: BOT });
+        const msgs = () => ls.get('tm_msgs', []);
+        const emit = () => { listener(); ch?.postMessage(1); };
+        if (ch) ch.onmessage = () => listener();
+
+        const add = (from, to, body) => {
+            const m = { id: crypto.randomUUID(), from, to, body, ts: Date.now(), read: false };
+            ls.set('tm_msgs', [...msgs(), m]);
+            return m;
+        };
+        return {
+            mode: 'demo',
+            async init() {
+                const asName = new URLSearchParams(location.search).get('as');
+                const tgUser = tg?.initDataUnsafe?.user;
+                if (asName) me = { id: 1000 + [...asName].reduce((a, c) => a + c.charCodeAt(0), 0), first_name: asName, username: asName.toLowerCase() };
+                else if (tgUser) me = tgUser;
+                else me = { id: 100, first_name: 'Men', username: 'men' };
+                ls.set('tm_users', { ...users(), [me.id]: me });
+                return me;
+            },
+            onChange(fn) { listener = fn; },
+            async conversations() {
+                const u = users(), byPeer = new Map();
+                for (const m of msgs()) {
+                    if (m.from !== me.id && m.to !== me.id) continue;
+                    const peer = m.from === me.id ? m.to : m.from;
+                    const c = byPeer.get(peer) || { peer: u[peer], last: m, unread: 0 };
+                    c.last = m; if (m.to === me.id && !m.read) c.unread++;
+                    byPeer.set(peer, c);
+                }
+                if (!byPeer.has(BOT.id)) byPeer.set(BOT.id, { peer: BOT, last: null, unread: 0 });
+                return [...byPeer.values()].filter((c) => c.peer);
+            },
+            async search(q) {
+                q = q.replace(/^@/, '').toLowerCase();
+                return Object.values(users()).filter((x) => x.id !== me.id &&
+                    (String(x.id) === q || (x.username || '').toLowerCase().includes(q) || fullName(x).toLowerCase().includes(q)));
+            },
+            async history(peer) {
+                return msgs().filter((m) => (m.from === me.id && m.to === peer) || (m.from === peer && m.to === me.id));
+            },
+            async send(peer, body) {
+                const m = add(me.id, peer, body); emit();
+                if (peer === BOT.id) setTimeout(() => { add(BOT.id, me.id, `Siz yozdingiz: «${body}»`); emit(); }, 700);
+                return m;
+            },
+            async markRead(peer) {
+                const all = msgs(); let ch2 = false;
+                for (const m of all) if (m.from === peer && m.to === me.id && !m.read) { m.read = true; ch2 = true; }
+                if (ch2) { ls.set('tm_msgs', all); emit(); }
+            },
+        };
+    }
+
+    // ---------- backend: Supabase ----------
+    function SupabaseBackend() {
+        let sb, me, listener = () => {};
+        const norm = (r) => ({ id: r.id, from: Number(r.sender_id), to: Number(r.receiver_id), body: r.body,
+                               ts: new Date(r.created_at).getTime(), read: !!r.read_at });
+        const profile = (r) => ({ id: Number(r.tg_id), first_name: r.first_name, last_name: r.last_name,
+                                  username: r.username, photo_url: r.photo_url });
+        return {
+            mode: 'live',
+            async init() {
+                if (!tg?.initData) throw new Error('Ilovani Telegram ichida oching');
+                const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', apikey: CFG.SUPABASE_ANON_KEY, Authorization: `Bearer ${CFG.SUPABASE_ANON_KEY}` },
+                    body: JSON.stringify({ initData: tg.initData }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Autentifikatsiya xatosi');
+                me = data.user;
+                sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, {
+                    accessToken: async () => data.token,
+                    auth: { persistSession: false },
+                });
+                sb.channel('messages')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => listener())
+                    .subscribe();
+                return me;
+            },
+            onChange(fn) { listener = fn; },
+            async conversations() {
+                const { data, error } = await sb.from('messages').select('*').order('created_at', { ascending: false }).limit(500);
+                if (error) throw error;
+                const byPeer = new Map();
+                for (const r of data) {
+                    const m = norm(r), peer = m.from === me.id ? m.to : m.from;
+                    const c = byPeer.get(peer) || { peerId: peer, last: m, unread: 0 };
+                    if (m.to === me.id && !m.read) c.unread++;
+                    byPeer.set(peer, c);
+                }
+                if (!byPeer.size) return [];
+                const { data: ps } = await sb.from('profiles').select('*').in('tg_id', [...byPeer.keys()]);
+                const pm = new Map((ps || []).map((p) => [Number(p.tg_id), profile(p)]));
+                return [...byPeer.values()].map((c) => ({ ...c, peer: pm.get(c.peerId) })).filter((c) => c.peer);
+            },
+            async search(q) {
+                q = q.trim().replace(/^@/, '');
+                if (!q) return [];
+                let req = sb.from('profiles').select('*').neq('tg_id', me.id).limit(20);
+                req = /^\d+$/.test(q) ? req.eq('tg_id', q) : req.ilike('username', `%${q.replace(/[%_,()]/g, '')}%`);
+                const { data, error } = await req;
+                if (error) throw error;
+                return data.map(profile);
+            },
+            async history(peer) {
+                const { data, error } = await sb.from('messages').select('*')
+                    .or(`and(sender_id.eq.${me.id},receiver_id.eq.${peer}),and(sender_id.eq.${peer},receiver_id.eq.${me.id})`)
+                    .order('created_at', { ascending: true }).limit(300);
+                if (error) throw error;
+                return data.map(norm);
+            },
+            async send(peer, body) {
+                const { data, error } = await sb.from('messages').insert({ sender_id: me.id, receiver_id: peer, body }).select().single();
+                if (error) throw error;
+                return norm(data);
+            },
+            async markRead(peer) {
+                await sb.from('messages').update({ read_at: new Date().toISOString() })
+                    .eq('sender_id', peer).eq('receiver_id', me.id).is('read_at', null);
+            },
+        };
+    }
+
+    // ---------- ilova ----------
+    const live = CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY;
+    const be = live ? SupabaseBackend() : LocalBackend();
+    let me = null, peer = null, convCache = [];
+
+    async function refresh() {
+        try {
+            await renderList();
+            if (peer) { await be.markRead(peer.id); await renderChat(); }
+        } catch (e) { console.error(e); }
+    }
+
+    async function renderList() {
+        const q = $('q').value.trim();
+        const box = $('convs');
+        let items;
+        if (q) items = (await be.search(q)).map((p) => ({ peer: p, last: null, unread: 0, found: true }));
+        else items = convCache = (await be.conversations()).sort((a, b) => (b.last?.ts || 0) - (a.last?.ts || 0));
+        box.textContent = '';
+        if (!items.length) {
+            const e = document.createElement('div'); e.className = 'empty';
+            e.textContent = q ? 'Hech kim topilmadi. Foydalanuvchi avval ilovani ochgan bo\'lishi kerak.' : 'Hali suhbat yo\'q. Yuqoridan @username yoki ID bo\'yicha qidiring.';
+            box.append(e); return;
         }
+        for (const c of items) {
+            const row = document.createElement('div'); row.className = 'row';
+            const av = document.createElement('div'); av.className = 'avatar'; avatarEl(av, c.peer);
+            const mid = document.createElement('div'); mid.className = 'mid';
+            const top = document.createElement('div'); top.className = 'top';
+            const nm = document.createElement('span'); nm.className = 'name'; nm.textContent = fullName(c.peer);
+            const tm = document.createElement('span'); tm.className = 'time'; tm.textContent = c.last ? fmtShort(c.last.ts) : '';
+            top.append(nm, tm);
+            const bot = document.createElement('div'); bot.className = 'bot';
+            const ls = document.createElement('span'); ls.className = 'last';
+            ls.textContent = c.found ? (c.peer.username ? '@' + c.peer.username : 'ID ' + c.peer.id)
+                : c.last ? (c.last.from === me.id ? 'Siz: ' : '') + c.last.body : 'Suhbatni boshlang';
+            bot.append(ls);
+            if (c.unread) { const b = document.createElement('span'); b.className = 'badge'; b.textContent = c.unread; bot.append(b); }
+            mid.append(top, bot); row.append(av, mid);
+            row.onclick = () => openChat(c.peer);
+            box.append(row);
+        }
+    }
+
+    async function openChat(p) {
+        peer = p; buzz();
+        $('q').value = '';
+        avatarEl($('peer-avatar'), p);
+        $('peer-name').textContent = fullName(p);
+        $('peer-sub').textContent = p.username ? '@' + p.username : 'ID ' + p.id;
+        $('app').classList.add('in-chat');
+        tg?.BackButton?.show();
+        await be.markRead(p.id);
+        await renderChat(true);
+        $('input').focus({ preventScroll: true });
+    }
+
+    function closeChat() {
+        peer = null; $('app').classList.remove('in-chat'); tg?.BackButton?.hide();
+        $('input').blur(); renderList();
+    }
+
+    let renderedFor = null;
+    async function renderChat(force) {
+        if (!peer) return;
+        const list = await be.history(peer.id);
+        const box = $('msgs');
+        const atBottom = force || renderedFor !== peer.id || box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+        renderedFor = peer.id;
+        box.textContent = '';
+        let prev = null;
+        for (const m of list) {
+            if (!prev || !sameDay(prev.ts, m.ts)) {
+                const d = document.createElement('div'); d.className = 'day'; d.textContent = fmtDay(m.ts); box.append(d);
+            }
+            prev = m;
+            const el = document.createElement('div');
+            el.className = 'msg' + (m.from === me.id ? ' me' : '') + (m.pending ? ' pending' : '');
+            el.append(document.createTextNode(m.body));
+            const meta = document.createElement('span'); meta.className = 'meta';
+            meta.textContent = fmtTime(m.ts) + (m.from === me.id ? (m.pending ? ' …' : m.read ? ' ✓✓' : ' ✓') : '');
+            el.append(meta); box.append(el);
+        }
+        if (atBottom) box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendCurrent() {
+        const input = $('input'), body = input.value.trim();
+        if (!body || !peer) return;
+        input.value = ''; autosize(); $('send').disabled = true;
+        buzz('light');
+        try {
+            await be.send(peer.id, body);
+            await renderChat(true);
+            if (be.mode === 'live') renderList();
+        } catch (e) {
+            console.error(e); input.value = body; autosize(); toast('Yuborilmadi. Qayta urinib ko\'ring');
+        }
+    }
+
+    function autosize() {
+        const t = $('input'); t.style.height = 'auto';
+        t.style.height = Math.min(t.scrollHeight, 120) + 'px';
+        $('send').disabled = !t.value.trim();
+    }
+
+    // ---------- hodisalar ----------
+    $('back').onclick = closeChat;
+    tg?.BackButton?.onClick(closeChat);
+    $('composer').onsubmit = (e) => { e.preventDefault(); sendCurrent(); };
+    $('input').addEventListener('input', autosize);
+    $('input').addEventListener('keydown', (e) => {
+        // Kompyuterda Enter — yuborish, Shift+Enter — yangi qator. Telefonda Enter — yangi qator.
+        if (e.key === 'Enter' && !e.shiftKey && !/Android|iPhone|iPad/i.test(navigator.userAgent)) { e.preventDefault(); sendCurrent(); }
+    });
+    let qTimer; $('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => renderList().catch(console.error), 250); });
+
+    (async function start() {
+        try {
+            me = await be.init();
+            $('me-label').textContent = fullName(me);
+            if (be.mode === 'demo') {
+                const b = $('banner'); b.style.display = 'block';
+                b.textContent = 'Demo rejim: xabarlar faqat shu brauzerda saqlanadi. config.js ni sozlang.';
+            }
+            be.onChange(refresh);
+            await renderList();
+        } catch (e) {
+            console.error(e);
+            $('convs').innerHTML = '';
+            const d = document.createElement('div'); d.className = 'empty'; d.textContent = 'Xato: ' + e.message;
+            $('convs').append(d);
+        }
+    })();
     </script>
 </body>
 
